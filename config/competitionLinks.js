@@ -1,7 +1,6 @@
 module.exports = {
-  comp1: "https://chat.whatsapp.com/IzmIvm48GWF3IwJ6VLAP1N?mode=gi_t",
-  comp2: "https://chat.whatsapp.com/link2",
-  comp3: "https://chat.whatsapp.com/link3",
-  comp4: "https://chat.whatsapp.com/link4",
-  comp5: "https://chat.whatsapp.com/link5",
+  comp1: "https://chat.whatsapp.com/CBiK2o74TGr23aORFwYWXO",
+  comp2: "https://chat.whatsapp.com/Kb8TPQT936UGnMAXwg5nQ8",
+  comp3: "https://chat.whatsapp.com/F5Zf51ZH6PE4HxYl2IQ48c",
+  comp4: "https://chat.whatsapp.com/EsukfiKrVDsKeZazZimaJc",
 };

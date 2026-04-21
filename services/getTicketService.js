@@ -3,26 +3,26 @@ const competitionLinks = require("../config/competitionLinks");
 const QRCode = require("qrcode");
 
 const getTickets = async (req, res) => {
-    try {
-        const user = await User.findOne({ email: req.params.email });
+  try {
+    const user = await User.findOne({ email: req.params.email });
 
-        if (!user) {
-            return res.send("User not found");
-        }
+    if (!user) {
+      return res.send("User not found");
+    }
 
-        const groupLink = competitionLinks[user.competitionId];
-        let ticketsHTML = "";
-        let showTicketAloneButton = ""
-        for (let t of user.tickets) {
-            const qr = await QRCode.toDataURL(
-                `https://your-domain.com/join?code=${t.code}`
-            );
+    const groupLink = competitionLinks[user.competitionId];
+    let ticketsHTML = "";
+    let showTicketAloneButton = ""
+    for (let t of user.tickets) {
+      const qr = await QRCode.toDataURL(
+        `https://your-domain.com/join?code=${t.code}`
+      );
 
-            if (user.tickets.length > 1) {
-                showTicketAloneButton = `<a href="https://cornball-chaste-blubber.ngrok-free.dev/ticket?code=${t.code}" class="btn-join">VIEW TICKET</a>`
-            }
+      if (user.tickets.length > 1) {
+        showTicketAloneButton = `<a href="https://cornball-chaste-blubber.ngrok-free.dev/ticket?code=${t.code}" class="btn-join">VIEW TICKET</a>`
+      }
 
-            ticketsHTML += `
+      ticketsHTML += `
             <div class="ticket-container">
                 <div class="ticket-left">
                     <div class="ticket-header">
@@ -43,7 +43,7 @@ const getTickets = async (req, res) => {
                         </div>
                     </div>
                         <div class="flex">
-                    <a href="${groupLink}" target="_blank" class="btn-join">JOIN COMMUNITY</a>
+                    <a href="${groupLink}" target="_blank" class="btn-join">JOIN Group</a>
                     ${showTicketAloneButton}
                     </div>
                 </div>
@@ -56,9 +56,9 @@ const getTickets = async (req, res) => {
                 </div>
             </div>
             `;
-        }
+    }
 
-        res.send(`
+    res.send(`
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -244,15 +244,16 @@ gap: 5px;
       </head>
       <body>
         <h1>ACCESS GRANTED</h1>
+          <p class="competition-description " style="font-size: 14px;">You Must Join the group through the button below to access this competition.</p>
         ${ticketsHTML}
       </body>
       </html>
     `);
 
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Server error");
-    } 
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server error");
+  }
 };
 
 module.exports = { getTickets };

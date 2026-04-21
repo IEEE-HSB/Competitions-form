@@ -42,10 +42,10 @@ const createPayment = async (user, paymentMethod, amount) => {
       expiration: 3600,
       order_id: orderId,
       billing_data: {
-        first_name: user.name || "Guest",
+        first_name: user.name,
         last_name: "NA",
-        email: user.email || "test@test.com",
-        phone_number: user.phone || "01000000000",
+        email: user.email,
+        phone_number: user.phone,
         city: "Cairo",
         country: "EG",
         street: "NA",
