@@ -20,7 +20,7 @@ const generateTicketsForUser = async (user) => {
     const code = generateCode();
 
     const qr = await generateQR(
-      `https://cornball-chaste-blubber.ngrok-free.dev/join?code=${code}`
+      `${process.env.BASE_URL}/join?code=${code}`
     );
 
     tickets.push({

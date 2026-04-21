@@ -44,7 +44,7 @@ const successRedirect = async (req, res) => {
     return res.send("Missing email");
   }
 
-  res.redirect(`http://localhost:3000/api/users/tickets/${email}`);
+  res.redirect(`${process.env.BASE_URL}/api/users/tickets/${email}`);
 };
 
 module.exports = {

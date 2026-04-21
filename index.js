@@ -4,8 +4,15 @@ const express = require('express');
 const cors = require("cors");
 
 const app = express();
-const port = 3000;
-app.use(cors());
+const port = process.env.PORT || 3000;
+
+app.use(cors({
+    origin: [
+  "http://localhost:3001",
+  process.env.FRONTEND_URL
+],
+  credentials: true
+}));
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -15,13 +22,23 @@ app.get('/', (req, res) => {
     res.send('server is working!');
 });
 
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
-
 const connectDB = require("./config/db");
-connectDB();
 
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+
+  } catch (err) {
+    console.error("❌ Failed to start server:", err);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 
 const userRoutes = require("./routes/userRoutes");
@@ -44,7 +61,6 @@ app.use("/", ticketPageRoutes);
 // T-J2gJB%xRDqSHQ
 
 // paymentRoutes.js
-// const qr = await generateQR(`https://cornball-chaste-blubber.ngrok-free.dev/join?code=${t.code}`);
 // must be replaced by the domain name of the deployed backend, and it should be generated for each ticket code, not globally in the file.
 
 

@@ -19,7 +19,7 @@ const getTickets = async (req, res) => {
       );
 
       if (user.tickets.length > 1) {
-        showTicketAloneButton = `<a href="https://cornball-chaste-blubber.ngrok-free.dev/ticket?code=${t.code}" class="btn-join">VIEW TICKET</a>`
+        showTicketAloneButton = `<a href="${process.env.BASE_URL}/ticket?code=${t.code}" class="btn-join">VIEW TICKET</a>`
       }
 
       ticketsHTML += `

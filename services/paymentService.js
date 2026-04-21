@@ -55,7 +55,7 @@ const createPayment = async (user, paymentMethod, amount) => {
       },
       currency: "EGP",
       integration_id: integrationId,
-      redirection_url: `https://cornball-chaste-blubber.ngrok-free.dev/success?email=${user.email}`
+      redirection_url: `${process.env.BASE_URL}/success?email=${user.email}`
 
     });
 
