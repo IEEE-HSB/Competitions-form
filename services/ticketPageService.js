@@ -23,7 +23,7 @@ const getTicketPage = async (req, res) => {
 
         const groupLink = competitionLinks[user.competitionId];
 
-        const qr = await QRCode.toDataURL(code);
+        const qr = await QRCode.toDataURL(`${process.env.BASE_URL}/join?code=${code}`);
 
         res.send(`
       <!DOCTYPE html>

@@ -4,8 +4,6 @@ const { generateQR } = require("./qrService");
 const competitionLinks = require("../config/competitionLinks");
 
 const generateTicketsForUser = async (user) => {
-  const groupLink = competitionLinks[user.competitionId];
-
   let participants = [
     { name: user.name, phone: user.phone }
   ];
@@ -19,15 +17,10 @@ const generateTicketsForUser = async (user) => {
   for (let p of participants) {
     const code = generateCode();
 
-    const qr = await generateQR(
-      `${process.env.BASE_URL}/join?code=${code}`
-    );
-
     tickets.push({
       name: p.name,
       phone: p.phone,
       code,
-      qr,
       used: false
     });
   }
