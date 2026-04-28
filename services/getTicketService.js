@@ -15,7 +15,7 @@ const getTickets = async (req, res) => {
     let showTicketAloneButton = ""
     for (let t of user.tickets) {
       const qr = await QRCode.toDataURL(
-        `https://your-domain.com/join?code=${t.code}`
+        `https://competition.ieeehsb.com/join?code=${t.code}`
       );
 
       if (user.tickets.length > 1) {
