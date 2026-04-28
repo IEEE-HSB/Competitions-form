@@ -19,7 +19,10 @@ const handleWebhook = async (req, res) => {
       await user.save();
       return res.sendStatus(200);
     }
-
+    
+    if (user.paymentStatus === "failed") {
+      return res.sendStatus(401).message("Payment failed");
+    }
     const tickets = await generateTicketsForUser(user);
 
     user.tickets = tickets;
