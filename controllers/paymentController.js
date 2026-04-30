@@ -4,38 +4,53 @@ const { generateTicketsForUser } = require("../services/ticketService");
 
 const handleWebhook = async (req, res) => {
   try {
-    const data = req.body.obj;
-    const success = data.success;
-    const orderId = data.order.id;
+    const { type, obj: data } = req.body;
+
+    // Only process transaction webhooks
+    if (type !== "TRANSACTION") {
+      return res.sendStatus(200);
+    }
+
+    const success = data.success === true || data.success === "true";
+    const orderId = data.order?.id || data.order; // Handle both object and primitive
+
+    console.log(`Webhook received: Type=${type}, Success=${success}, OrderID=${orderId}`);
 
     const user = await User.findOne({ paymobOrderId: orderId });
 
-    if (!user || user.paymentStatus !== "pending") {
+    if (!user) {
+      console.log("User not found for orderId:", orderId);
       return res.sendStatus(200);
     }
 
-    if (!success) {
-      user.paymentStatus = "failed";
+    // If already paid, don't do anything
+    if (user.paymentStatus === "paid") {
+      return res.sendStatus(200);
+    }
+
+    if (success) {
+      // Generate tickets and update status
+      const tickets = await generateTicketsForUser(user);
+      user.tickets = tickets;
+      user.paymentStatus = "paid";
       await user.save();
-      return res.sendStatus(200);
+
+      console.log("✅ PAYMENT SUCCESS: User paid and tickets generated:", user.email);
+    } else {
+      // Don't mark as 'failed' immediately to allow for subsequent successful attempts
+      // Just log the failure for now
+      console.log("❌ PAYMENT ATTEMPT FAILED: OrderID:", orderId, "User:", user.email);
+      
+      // Optional: you could update to 'failed' if you want to track it, 
+      // but ensure 'paid' can still overwrite 'failed'.
+      // user.paymentStatus = "failed";
+      // await user.save();
     }
-    
-    if (user.paymentStatus === "failed") {
-      return res.sendStatus(401).message("Payment failed");
-    }
-    const tickets = await generateTicketsForUser(user);
-
-    user.tickets = tickets;
-    user.paymentStatus = "paid";
-
-    await user.save();
-
-    console.log("USER PAID:", user.email);
 
     return res.sendStatus(200);
 
   } catch (err) {
-    console.log(err);
+    console.error("❌ WEBHOOK ERROR:", err);
     return res.sendStatus(500);
   }
 };
