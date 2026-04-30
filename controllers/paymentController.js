@@ -1,56 +1,106 @@
-// controllers/paymentController.js
 const User = require("../models/User");
 const { generateTicketsForUser } = require("../services/ticketService");
 
 const handleWebhook = async (req, res) => {
   try {
-    const data = req.body.obj;
-    const success = data.success;
-    const orderId = data.order.id;
+    const { type, obj } = req.body;
+
+    // Only transaction webhooks
+    if (type !== "TRANSACTION") {
+      return res.sendStatus(200);
+    }
+
+    // ✅ correct success check
+    const success = obj?.success === true;
+
+    // ✅ correct orderId extraction
+    const orderId =
+      obj?.order?.id ||
+      obj?.order ||
+      obj?.id;
+
+    console.log(
+      `Webhook received: Type=${type}, Success=${success}, OrderID=${orderId}`
+    );
 
     const user = await User.findOne({ paymobOrderId: orderId });
 
-    if (!user || user.paymentStatus !== "pending") {
+    if (!user) {
+      console.log("User not found for orderId:", orderId);
       return res.sendStatus(200);
     }
 
-    if (!success) {
+    // prevent duplicate processing
+    if (user.paymentStatus === "paid") {
+      return res.sendStatus(200);
+    }
+
+    // ================= SUCCESS =================
+    if (success) {
+      if (!user.tickets || user.tickets.length === 0) {
+        const tickets = await generateTicketsForUser(user);
+        user.tickets = tickets;
+      }
+
+      user.paymentStatus = "paid";
+      await user.save();
+
+      console.log("✅ PAYMENT SUCCESS:", user.email);
+
+      return res.sendStatus(200);
+    }
+
+    // ================= FAILED =================
+    if (user.paymentStatus !== "paid") {
       user.paymentStatus = "failed";
       await user.save();
-      return res.sendStatus(200);
+
+      console.log("❌ PAYMENT FAILED:", user.email);
     }
-    
-    if (user.paymentStatus === "failed") {
-      return res.sendStatus(401).message("Payment failed");
-    }
-    const tickets = await generateTicketsForUser(user);
-
-    user.tickets = tickets;
-    user.paymentStatus = "paid";
-
-    await user.save();
-
-    console.log("USER PAID:", user.email);
 
     return res.sendStatus(200);
 
   } catch (err) {
-    console.log(err);
+    console.error("❌ WEBHOOK ERROR:", err);
     return res.sendStatus(500);
   }
 };
 
+
+// ================= SUCCESS REDIRECT =================
+
 const successRedirect = async (req, res) => {
-  const email = req.query.email;
+  try {
+    const email = req.query.email;
+    const success = req.query.success;
 
-  if (!email) {
-    return res.send("Missing email");
+    if (!email) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/payment-failed`
+      );
+    }
+
+    if (success === "false") {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/payment-failed`
+      );
+    }
+
+    // redirect to backend tickets route (as requested)
+    return res.redirect(
+      `${process.env.BASE_URL}/api/users/tickets/${email}`
+    );
+
+  } catch (err) {
+    console.error(err);
+
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/payment-failed`
+    );
   }
-
-  res.redirect(`${process.env.BASE_URL}/api/users/tickets/${email}`);
 };
 
 module.exports = {
   handleWebhook,
-  successRedirect
+  successRedirect,
 };

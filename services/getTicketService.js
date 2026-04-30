@@ -15,7 +15,7 @@ const getTickets = async (req, res) => {
     let showTicketAloneButton = ""
     for (let t of user.tickets) {
       const qr = await QRCode.toDataURL(
-        `https://competition.ieeehsb.com/join?code=${t.code}`
+        `${process.env.BASE_URL}/join?code=${t.code}`
       );
 
       if (user.tickets.length > 1) {
@@ -65,182 +65,172 @@ const getTickets = async (req, res) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Your Competition Tickets</title>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
+       <style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap');
 
-          body {
-            background-color: #020617;
-            color: #f1f5f9;
-            font-family: 'Rajdhani', sans-serif;
-            margin: 0;
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-          }
+  body {
+    background-color: #020617;
+    color: #f1f5f9;
+    font-family: 'Rajdhani', sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-          h1 {
-            font-family: 'Orbitron', sans-serif;
-            color: #207DA9;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            margin-bottom: 40px;
-            text-shadow: 0 0 15px rgba(32, 125, 169, 0.4);
-          }
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    color: #207DA9;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.8rem;
+  }
 
-          .ticket-container {
-            background: #0f172a;
-            width: 100%;
-            max-width: 650px;
-            height: 220px;
-            margin-bottom: 30px;
-            display: flex;
-            position: relative;
-            border: 1px solid rgba(32, 125, 169, 0.3);
-            border-left: 6px solid #207DA9;
-            border-radius: 4px;
-            overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            clip-path: polygon(0% 0%, 95% 0%, 100% 15%, 100% 85%, 95% 100%, 0% 100%);
-          }
+  .ticket-container {
+    background: #0f172a;
+    width: 100%;
+    max-width: 650px;
+    min-height: 220px; /* تغيير من height إلى min-height */
+    margin-bottom: 30px;
+    display: flex;
+    position: relative;
+    border: 1px solid rgba(32, 125, 169, 0.3);
+    border-left: 6px solid #207DA9;
+    border-radius: 4px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    /* الـ clip-path يعمل جيداً في الديسكتوب */
+    clip-path: polygon(0% 0%, 95% 0%, 100% 15%, 100% 85%, 95% 100%, 0% 100%);
+  }
 
-          /* Left Section */
-          .ticket-left {
-            flex: 2;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border-right: 2px dashed rgba(32, 125, 169, 0.3);
-          }
+  .ticket-left {
+    flex: 2;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 2px dashed rgba(32, 125, 169, 0.3);
+  }
 
-          .ticket-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-          }
+  .ticket-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
 
-          .competition-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 12px;
-            letter-spacing: 2px;
-            color: rgba(255,255,255,0.6);
-          }
+  .ticket-info {
+    display: flex;
+    flex-wrap: wrap; /* للسماح بنزول العناصر لو المساحة ضيقة */
+    gap: 20px;
+    margin-bottom: 20px;
+  }
 
-          .ticket-info {
-            display: flex;
-            gap: 40px;
-            margin: 15px 0;
-          }
+  .info-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+  }
 
-          .info-group {
-            display: flex;
-            flex-direction: column;
-          }
+  .label {
+    font-size: 11px;
+    color: #207DA9;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+  }
 
-          .label {
-            font-size: 11px;
-            color: #207DA9;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 700;
-          }
+  .value {
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 5px;
+    word-break: break-all;
+  }
 
-          .value {
-            font-size: 22px;
-            font-weight: 700;
-            margin-top: 5px;
-          }
+  .flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 
-          .code-highlight {
-            color: #207DA9;
-            text-shadow: 0 0 10px rgba(32, 125, 169, 0.3);
-          }
+  .btn-join {
+    display: inline-block;
+    background: #207DA9;
+    color: white;
+    padding: 8px 20px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 12px;
+    letter-spacing: 1px;
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+    transition: all 0.3s ease;
+    text-align: center;
+  }
 
-          .btn-join {
-            display: inline-block;
-            width: fit-content;
-            background: #207DA9;
-            color: white;
-            padding: 8px 25px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 13px;
-            letter-spacing: 1px;
-            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-            transition: all 0.3s ease;
-          }
+  .ticket-right {
+    flex: 1;
+    background: rgba(32, 125, 169, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    min-width: 160px;
+  }
 
-          .btn-join:hover {
-            background: #3498db;
-            box-shadow: 0 0 15px rgba(32, 125, 169, 0.5);
-            transform: translateX(5px);
-          }
+  .qr-wrapper {
+    background: white;
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
 
-          /* Right Section */
-          .ticket-right {
-            flex: 1;
-            background: rgba(32, 125, 169, 0.05);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-          }
+  .qr-wrapper img {
+    width: 110px;
+    height: 110px;
+    display: block;
+  }
 
-          .qr-wrapper {
-            background: white;
-            padding: 8px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-          }
+  .scan-text {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #207DA9;
+    font-weight: bold;
+  }
 
-          .qr-wrapper img {
-            width: 100px;
-            height: 100px;
-            display: block;
-          }
+  /* Media Query للموبايل */
+  @media (max-width: 600px) {
+    .ticket-container {
+      flex-direction: column;
+      height: auto;
+      max-width: 350px;
+      clip-path: none; /* إلغاء القطع في الموبايل لضمان ظهور الكيو ار */
+      border-right: 1px solid rgba(32, 125, 169, 0.3);
+    }
 
-          .scan-text {
-            font-size: 10px;
-            letter-spacing: 2px;
-            color: #207DA9;
-            font-weight: bold;
-          }
-.flex{
-display: flex;
-flex-wrap: wrap;
-gap: 5px;
-}
-.ticket-container{
-          /* Ticket Notches */
-          .ticket-container::before, .ticket-container::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background-color: #020617;
-            border-radius: 50%;
-            right: 31.5%;
-            z-index: 2;
-          }
-          .ticket-container::before { top: -10px; }
-          .ticket-container::after { bottom: -10px; }
+    .ticket-left {
+      border-right: none;
+      border-bottom: 2px dashed rgba(32, 125, 169, 0.3);
+      padding: 20px;
+    }
 
-          @media (max-width: 600px) {
-            .ticket-container {
-              flex-direction: column;
-              height: auto;
-              max-width: 320px;
-              clip-path: none;
-            }
-            .ticket-left {
-                border-right: none;
-                border-bottom: 2px dashed rgba(32, 125, 169, 0.3);
-            }
-            .ticket-container::before, .ticket-container::after { display: none; }
-          }
-        </style>
+    .ticket-right {
+      padding: 25px;
+      background: rgba(32, 125, 169, 0.1);
+    }
+
+    .value {
+      font-size: 18px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+    }
+  }
+</style>
       </head>
       <body>
         <h1>ACCESS GRANTED</h1>
